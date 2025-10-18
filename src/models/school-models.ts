@@ -9,4 +9,12 @@ export class SchoolModel {
       [customer_id, role, extraFields.category, extraFields.percentile, extraFields.user_rank, extraFields.exam_preparing_for]
     );
   }
+
+  static async findByUserId(client: PoolClient, customer_id: string) {
+    const res = await client.query(
+      `SELECT * FROM school_users WHERE customer_id = $1`,
+      [customer_id]
+    );
+    return res.rows[0] || null;
+  }
 }

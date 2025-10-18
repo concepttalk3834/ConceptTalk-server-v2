@@ -40,4 +40,56 @@ export class UserModel {
       [customer_id, accessToken, emailToken]
     );
   }
+
+  static async findById(client: any, id:any) {
+    const res = await client.query(
+      `SELECT * FROM user_details WHERE id = $1`,
+      [id]
+    );
+    return res.rows[0] || null;
+  }
+  
+  static async markVerified(client: any , userId:any ) {
+    const query = `
+      UPDATE users
+      SET is_verified = TRUE,
+          verified_at = NOW(),
+          status = 'active'
+      WHERE id = $1
+      RETURNING id, email, is_verified, verified_at, status;
+    `;
+
+    const { rows } = await client.query(query, [userId]);
+    return rows[0] || null;
+  }
+
+    static async updateProfile(
+      client: any,
+      userId: any,
+      {
+        full_name,
+        phone,
+        dob,
+        state,
+        role,
+      }: { full_name?: string; phone?: string; dob?: string; state?: string; role?: string }
+    ) {
+    const query = `
+      UPDATE users
+      SET 
+        full_name = $1,
+        phone = $2,
+        dob = $3,
+        state = $4,
+        role = $5,
+        updated_at = NOW()
+      WHERE id = $6
+      RETURNING id, email, full_name, phone, dob, state, role, is_verified, status, updated_at;
+    `;
+
+    const values = [full_name, phone, dob, state, role, userId];
+    const { rows } = await client.query(query, values);
+
+    return rows[0] || null;
+  }
 }

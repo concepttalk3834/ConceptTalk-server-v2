@@ -18,4 +18,11 @@ export class CollegeModel {
       ]
     );
   }
+  static async findByUserId(client: PoolClient, customer_id: string) {
+    const res = await client.query(
+      `SELECT * FROM school_users WHERE customer_id = $1`,
+      [customer_id]
+    );
+    return res.rows[0] || null;
+  }
 }
