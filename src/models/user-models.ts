@@ -21,14 +21,24 @@ export class UserModel {
     return res.rows[0] || null;
   }
 
-  static async create(client: PoolClient, user: any) {
-    const res = await client.query(
-      `INSERT INTO user_details 
-        (full_name, email, password, phone, dob, state, role, email_verified, created_at, updated_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,FALSE,NOW(),NOW())
-       RETURNING id, email, role`,
-      [user.full_name, user.email, user.password, user.phone, user.dob, user.state, user.role]
-    );
+  static async create(
+    client: PoolClient,
+    {
+      email,
+      password,
+      email_verified = false,
+
+    }: { email: string; password: string; email_verified?: boolean }
+  ) {
+        const query = `
+        INSERT INTO user_details (email, password, email_verified, created_at, updated_at)
+        VALUES ($1, $2, $3, NOW(), NOW())
+        RETURNING id, email, email_verified;
+      `;
+
+      const values = [email, password, email_verified];
+      const res = await client.query(query, values);
+
     return res.rows[0];
   }
 
@@ -51,14 +61,12 @@ export class UserModel {
   
   static async markVerified(client: any , userId:any ) {
     const query = `
-      UPDATE users
-      SET is_verified = TRUE,
-          verified_at = NOW(),
-          status = 'active'
+      UPDATE user_details
+      SET email_verified = TRUE,
+          verified_at = NOW()
       WHERE id = $1
-      RETURNING id, email, is_verified, verified_at, status;
+      RETURNING id, email, email_verified, verified_at;
     `;
-
     const { rows } = await client.query(query, [userId]);
     return rows[0] || null;
   }

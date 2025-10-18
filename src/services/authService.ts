@@ -11,11 +11,12 @@ export class AuthService {
   static async verifyEmail(client: PoolClient, token: string) {
   try {
     const payload = verifyToken(token); // your JWT verifier
-
+    console.log("Token payload:", payload);
     const user = await UserModel.findById(client, payload.id);
     if (!user) throw { status: 404, message: "User not found" };
     if (user.is_verified) return { message: "Email already verified" };
 
+    console.log("Verifying email for user ID:", user.id);
     await UserModel.markVerified(client, user.id);
 
     return { message: "Email verified successfully" };
@@ -50,8 +51,8 @@ export class AuthService {
     const newUser = await UserModel.create(client, {
       email,
       password: hashedPassword,
-      is_verified: false, // default
-      status: "pending",  // can be used to restrict dashboard access until verified
+      email_verified: false, // default
+      // status: "pending",  // can be used to restrict dashboard access until verified
     });
 
     // Generate tokens
