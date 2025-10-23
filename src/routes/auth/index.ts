@@ -5,4 +5,6 @@ export async function authRoutes(fastify: FastifyInstance) {
   fastify.post("/signup", AuthController.signup);
 
   fastify.get("/verify-email", AuthController.verifyEmail);
+
+  fastify.post("/login", AuthController.login);
 }
