@@ -76,5 +76,36 @@ export class AuthService {
   }
 }
 
+// Login service
+  static async login(client: PoolClient, body: any) {
+  const { email, password } = body;
+
+  if (!email || !password) {
+    throw { status: 400, message: "Missing email or password" };
+  }
+
+  const user = await UserModel.findByEmail(client, email);
+  if (!user) {
+    throw { status: 401, message: "Invalid email or password" };
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    throw { status: 401, message: "Invalid email or password" };
+  }
+
+  if (!user.email_verified) {
+    throw { status: 403, message: "Please verify your email before logging in" };
+  }
+
+  // Generate access token
+  const accessToken = generateToken({ id: user.id, email: user.email });
+
+  return {
+    message: "Login successful",
+    accessToken,
+    userId: user.id,
+  };
+  }
 
 }
