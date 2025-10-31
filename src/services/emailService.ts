@@ -22,12 +22,12 @@ export const EmailService = {
       return;
     }
 
-    const verifyUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/verify-email?token=${token}`;
+    const verifyUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/auth/verify-email?token=${token}`;
 
     const mailOptions = {
-      from: `"EduPortal" <${process.env.SMTP_USER}>`,
+      from: `"Concept Talk" <${process.env.SMTP_USER}>`,
       to: email,
-      subject: "Verify your email address - EduPortal",
+      subject: "Verify your email address - Concept Talk",
       html: generateVerificationEmailTemplate(verifyUrl),
     };
 
@@ -44,7 +44,7 @@ export const EmailService = {
 function generateVerificationEmailTemplate(verifyUrl:string) {
   return `
   <div style="font-family: Arial, sans-serif; color: #333;">
-    <h2 style="color: #007bff;">Welcome to EduPortal 🎓</h2>
+    <h2 style="color: #ffe371;">Welcome to Concept Talk 🎓</h2>
     <p>Thank you for signing up! Please verify your email address to activate your account.</p>
     
     <a href="${verifyUrl}" 

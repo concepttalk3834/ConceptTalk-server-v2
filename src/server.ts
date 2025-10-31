@@ -3,10 +3,18 @@ import dotenv from "dotenv";
 import {pool} from './config/db'
 import fastifyPostgres from "@fastify/postgres";
 import registerRoutes from "./routes";
+import fastifyCors from "@fastify/cors";
 dotenv.config();
 
 const server = Fastify({
     logger: true,
+})
+
+// Register CORS plugin
+server.register(fastifyCors, {
+    origin: process.env.FRONTEND_URL ,
+    methods: ["GET", "POST", "PUT"],
+    credentials: true,
 })
 
 // Register Postgres plugin
