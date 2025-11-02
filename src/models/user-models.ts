@@ -100,4 +100,15 @@ export class UserModel {
 
     return rows[0] || null;
   }
+
+  static async updatePassword(client: any, userId: any, newPassword: string) {
+    const query = `
+      UPDATE user_details
+      SET password = $1,
+          updated_at = NOW()
+      WHERE id = $2
+      RETURNING id, email, updated_at;
+    `;
+    return await client.query(query, [newPassword, userId]);
+  }
 }

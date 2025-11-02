@@ -10,20 +10,20 @@ export class AuthService {
 
   static async verifyEmail(client: PoolClient, token: string) {
   try {
-    const payload = verifyToken(token); // your JWT verifier
-    console.log("Token payload:", payload);
-    const user = await UserModel.findById(client, payload.id);
-    if (!user) throw { status: 404, message: "User not found" };
-    if (user.is_verified) return { message: "Email already verified" };
+      const payload = verifyToken(token); // your JWT verifier
+      console.log("Token payload:", payload);
+      const user = await UserModel.findById(client, payload.id);
+      if (!user) throw { status: 404, message: "User not found" };
+      if (user.is_verified) return { message: "Email already verified" };
 
-    console.log("Verifying email for user ID:", user.id);
-    await UserModel.markVerified(client, user.id);
+      console.log("Verifying email for user ID:", user.id);
+      await UserModel.markVerified(client, user.id);
 
-    return { message: "Email verified successfully" };
-  } catch (err) {
-    throw { status: 400, message: "Invalid or expired token" };
+      return { message: "Email verified successfully" };
+    } catch (err) {
+      throw { status: 400, message: "Invalid or expired token" };
+    }
   }
-}
 
 
   static async signup(client: PoolClient, body: any) {
@@ -110,4 +110,54 @@ export class AuthService {
   };
   }
 
+  static async forgotPassword(client: PoolClient, body: any) {
+    const { email, newPassword, confirmNewPassword } = body;
+    
+    if (!email || !newPassword || !confirmNewPassword) {
+      throw { status: 400, message: "Missing required fields" };
+    } 
+    if (newPassword !== confirmNewPassword) {
+      throw { status: 400, message: "Passwords do not match" };
+    }
+    
+    const user = await UserModel.findByEmail(client, email);
+    if (!user) {
+      throw { status: 404, message: "User not found" };
+    }
+    
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    
+    await UserModel.updatePassword(client, user.id, hashedPassword);
+    
+    return { message: "Password reset successfully" };
+  }
+
+  static async changePassword(client: PoolClient, userId: string, body: any) {
+    const { currentPassword, newPassword, confirmNewPassword } = body;
+    
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      throw { status: 400, message: "Missing required fields" };
+    } 
+    if (newPassword !== confirmNewPassword) {
+      throw { status: 400, message: "Passwords do not match" };
+    }
+    
+    const user = await UserModel.findById(client, userId);
+    if (!user) {
+      throw { status: 404, message: "User not found" };
+    }
+    
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      throw { status: 401, message: "Current password is incorrect" };
+    }
+    
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    
+    await UserModel.updatePassword(client, user.id, hashedPassword);
+    
+    return { message: "Password changed successfully" };
+  }
 }

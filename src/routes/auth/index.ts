@@ -7,4 +7,8 @@ export async function authRoutes(fastify: FastifyInstance) {
   fastify.get("/verify-email", AuthController.verifyEmail);
 
   fastify.post("/login", AuthController.login);
+
+  fastify.post("/forgot-password", AuthController.forgotPassword);
+
+  fastify.post("/change-password", AuthController.changePassword);
 }
